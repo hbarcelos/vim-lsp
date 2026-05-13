@@ -54,7 +54,7 @@ function! lsp#internal#diagnostics#float#_enable() abort
         \ }),
         \ lsp#callbag#filter({_->mode() is# 'n'}),
         \ lsp#callbag#filter({_->getbufvar(bufnr('%'), '&buftype') !=# 'terminal' }),
-        \ lsp#callbag#map({_->lsp#internal#diagnostics#under_cursor#get_diagnostic()}),
+        \ lsp#callbag#map({_->lsp#internal#diagnostics#under_cursor#get_diagnostic({'line_fallback': v:true})}),
         \ lsp#callbag#subscribe({x->s:show_float(x)}),
         \ )
 endfunction

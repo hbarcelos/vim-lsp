@@ -68,6 +68,38 @@ Describe lsp#internal#diagnostics#under_cursor
         Assert Equals(lsp#internal#diagnostics#under_cursor#_get_closest_diagnostic(l:diagnostics, 9, 6), {})
     End
 
+    It should return the first diagnostic on the line when line fallback is enabled
+        let l:diagnostics = [
+            \     { 'message': 'second', 'range': {'start': {'character': 10, 'line': 4}, 'end': {'character': 14, 'line': 4}} },
+            \     { 'message': 'first', 'range': {'start': {'character': 2, 'line': 4}, 'end': {'character': 6, 'line': 4}} }
+            \   ]
+        let l:expected = { 'message': 'first', 'range': {'start': {'character': 2, 'line': 4}, 'end': {'character': 6, 'line': 4}} }
+        Assert Equals(lsp#internal#diagnostics#under_cursor#_get_closest_diagnostic(l:diagnostics, 5, 8, {'line_fallback': v:true}), l:expected)
+    End
+
+    It should not return a diagnostic on the same line without line fallback
+        let l:diagnostics = [
+            \     { 'message': 'issue', 'range': {'start': {'character': 2, 'line': 4}, 'end': {'character': 6, 'line': 4}} }
+            \   ]
+        Assert Equals(lsp#internal#diagnostics#under_cursor#_get_closest_diagnostic(l:diagnostics, 5, 8), {})
+    End
+
+    It should prefer the diagnostic under cursor over the first diagnostic on the line
+        let l:diagnostics = [
+            \     { 'message': 'first', 'range': {'start': {'character': 2, 'line': 4}, 'end': {'character': 6, 'line': 4}} },
+            \     { 'message': 'under cursor', 'range': {'start': {'character': 10, 'line': 4}, 'end': {'character': 14, 'line': 4}} }
+            \   ]
+        let l:expected = { 'message': 'under cursor', 'range': {'start': {'character': 10, 'line': 4}, 'end': {'character': 14, 'line': 4}} }
+        Assert Equals(lsp#internal#diagnostics#under_cursor#_get_closest_diagnostic(l:diagnostics, 5, 12, {'line_fallback': v:true}), l:expected)
+    End
+
+    It should return empty when line fallback is enabled but the line has no diagnostics
+        let l:diagnostics = [
+            \     { 'message': 'issue', 'range': {'start': {'character': 2, 'line': 4}, 'end': {'character': 6, 'line': 4}} }
+            \   ]
+        Assert Equals(lsp#internal#diagnostics#under_cursor#_get_closest_diagnostic(l:diagnostics, 6, 1, {'line_fallback': v:true}), {})
+    End
+
     It should return the closest diagnostic when multiple diagnostics exist across different ranges
         let l:diagnostics = [
             \     { 'range': {'start': {'character': 10, 'line': 4}, 'end': {'character': 7, 'line': 10}} },
